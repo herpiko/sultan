@@ -65,6 +65,7 @@ void PurchaseAddItemDialog::reset()
                           ui->pushSaveAgain << ui->lineDiscountFormula);
     ui->lineBarcode->setFocus(Qt::TabFocusReason);
     ui->lineBarcode->setReadOnly(false);
+    ui->lineDiscountFormula->clear();
     mId = 0;
     ui->pushSaveAgain->show();
     ui->pushAddNewItem->hide();
@@ -162,7 +163,7 @@ void PurchaseAddItemDialog::save()
     data.insert("barcode", ui->lineBarcode->text());
     data.insert("purchase_id", mPurchaseId);
     data.insert("count", ui->doubleCount->value());
-    data.insert("price", ui->doubleBuyPrice->value());
+    data.insert("price", ui->doublePrice->value());
     data.insert("total", ui->doublePrice->value() * ui->doubleCount->value());
     data.insert("discount_formula", ui->lineDiscountFormula->text());
     data.insert("discount", mDiscount);

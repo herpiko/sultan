@@ -48,12 +48,15 @@ private:
     int mId = -1;
     int mCurrentSuplier = -1;
     PurchaseItem mItem;
+    bool mIsAddAgain = false;
 
     void populateSuplier(const QVariantList &list);
+    void fillField();
 
 private slots:
     void purchaseItemFocused();
     void saveClicked();
+    void calculateTotal();
 };
 
 }

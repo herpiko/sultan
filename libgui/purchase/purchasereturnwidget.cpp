@@ -34,6 +34,7 @@
 #include "tilewidget.h"
 #include "preference.h"
 #include <QMessageBox>
+#include <QPushButton>
 
 using namespace LibGUI;
 using namespace LibG;
@@ -54,55 +55,76 @@ PurchaseReturnWidget::PurchaseReturnWidget(MessageBus *bus, QWidget *parent) :
     auto model = mTableWidget->getModel();
     model->setMessageBus(bus);
     model->addColumn("created_at", tr("Date"), Qt::AlignLeft, [](TableItem *item, const QString &key) {
-        return LibDB::DBUtil::sqlDateToDateTime(item->data(key).toString()).toString("dd-MM-yyyy");
+        return LibDB::DBUtil::sqlDateToDateTime(item->data(key).toString()).toString("dd-MM-yyyy hh:mm");
     });
-    model->addColumn("barcode", tr("Number"));
+    model->addColumn("barcode", tr("Barcode"));
     model->addColumn("name", tr("Name"));
     model->addColumn("suplier", tr("Suplier"));
-    /*model->addColumn("payment_type", tr("Type"), Qt::AlignLeft, [](TableItem *item, const QString &key) {
-        return item->data(key).toInt() == PURCHASEPAYMENT::DIRECT ? tr("Direct") : tr("Deadline");
-    });
-    model->addColumn("deadline", tr("Deadline"), Qt::AlignLeft, [](TableItem *item, const QString &key) {
-        return LibDB::DBUtil::sqlDateToDate(item->data(key).toString()).toString("dd-MM-yyyy");
-    });
     model->addColumn("status", tr("Status"), Qt::AlignLeft, [](TableItem *item, const QString &key) {
-        int type = item->data("payment_type").toInt();
-        if(type == PURCHASEPAYMENT::DIRECT) return tr("Paid");
-        return (item->data(key) == PAYMENT_STATUS::PAID ? tr("Paid") : tr("Unpaid"));
+        return item->data(key).toInt() == PURCHASE_RETURN_STATUS::UNRETURN ? tr("Unreturn") : tr("Returned");
     });
-    model->addColumnMoney("total", tr("Sub-total"));
-    model->addColumn("discount_formula", tr("Disc. Form"));
-    model->addColumnMoney("discount", tr("Discount"));
-    model->addColumnMoney("final", tr("Total"));
-    model->addHeaderFilter("number", HeaderFilter{HeaderWidget::LineEdit, TableModel::FilterLike, QVariant()});
+    model->addColumn("count", tr("Count"));
+    model->addColumnMoney("total", tr("Total"));
+    model->addColumn("return_type", tr("Type"), Qt::AlignLeft, [](TableItem *item, const QString &key) {
+        if(item->data("status").toInt() == PURCHASE_RETURN_STATUS::UNRETURN) return tr("-");
+        return item->data(key).toInt() == PURCHASE_RETURN_TYPE::ITEM ? tr("Item") : tr("Money");
+    });
+    model->addColumn("return_date", tr("Return Date"), Qt::AlignLeft, [](TableItem *item, const QString &key) {
+        if(item->data("status").toInt() == PURCHASE_RETURN_STATUS::UNRETURN) return tr("-");
+        return LibDB::DBUtil::sqlDateToDateTime(item->data(key).toString()).toString("dd-MM-yyyy");
+    });
+    model->addColumn("note", tr("Note"));
+    model->addHeaderFilter("barcode", HeaderFilter{HeaderWidget::LineEdit, TableModel::FilterLike, QVariant()});
+    model->addHeaderFilter("name", HeaderFilter{HeaderWidget::LineEdit, TableModel::FilterLike, QVariant()});
     model->addHeaderFilter("suplier", HeaderFilter{HeaderWidget::LineEdit, TableModel::FilterLike, QVariant()});
-    model->addHeaderFilter("payment_type", HeaderFilter{HeaderWidget::Combo, TableModel::FilterEQ, QVariant()});
-    model->addHeaderFilter("status", HeaderFilter{HeaderWidget::Combo, TableModel::FilterEQ, QVariant()});*/
+    model->addHeaderFilter("status", HeaderFilter{HeaderWidget::Combo, TableModel::FilterEQ, QVariant()});
+    model->addHeaderFilter("return_type", HeaderFilter{HeaderWidget::Combo, TableModel::FilterEQ, QVariant()});
     model->setTypeCommand(MSG_TYPE::PURCHASE_RETURN, MSG_COMMAND::QUERY);
     model->setTypeCommandOne(MSG_TYPE::PURCHASE_RETURN, MSG_COMMAND::GET);
     mTableWidget->setupTable();
     GuiUtil::setColumnWidth(mTableWidget->getTableView(), QList<int>() << 150 << 150 << 200 << 100 << 100 << 100 << 100 << 100 << 100);
     mTableWidget->getTableView()->horizontalHeader()->setStretchLastSection(true);
-    /*auto button = new QPushButton(QIcon(":/images/16x16/money-arrow.png"), "");
-    button->setToolTip(tr("Payment"));
+    auto button = new QPushButton(QIcon(":/images/16x16/money-arrow.png"), "");
+    button->setToolTip(tr("Return resolution"));
     button->setFlat(true);
-    connect(button, SIGNAL(clicked(bool)), SLOT(paymentClicked()));
-    mTableWidget->addActionButton(button);*/
+    connect(button, SIGNAL(clicked(bool)), SLOT(resolutionClicked()));
+    mTableWidget->addActionButton(button);
     model->setSort("created_at DESC");
     model->refresh();
 
     connect(mTableWidget, SIGNAL(addClicked()), SLOT(addClicked()));
     connect(mTableWidget, SIGNAL(updateClicked(QModelIndex)), SLOT(updateClicked(QModelIndex)));
     connect(mTableWidget, SIGNAL(deleteClicked(QModelIndex)), SLOT(deleteClicked(QModelIndex)));
-    //connect(mAddDialog, SIGNAL(successAdd()), mTableWidget->getModel(), SLOT(refresh()));
-    //connect(mAddDialog, SIGNAL(successUpdate(QVariant)), mTableWidget->getModel(), SLOT(resfreshOne(QVariant)));
-    //connect(mTableWidget->getTableView(), SIGNAL(doubleClicked(QModelIndex)), SLOT(tableDoubleClicked(QModelIndex)));
-    //connect(model, SIGNAL(firstDataLoaded()), SLOT(getSummary()));
+    connect(model, SIGNAL(firstDataLoaded()), SLOT(getSummary()));
 }
 
 void PurchaseReturnWidget::messageReceived(LibG::Message *msg)
 {
+    if(msg->isTypeCommand(MSG_TYPE::PURCHASE_RETURN, MSG_COMMAND::DEL)) {
+        if(msg->isSuccess()) {
+            FlashMessageManager::showMessage(tr("Item deleted successfully"));
+            mTableWidget->getModel()->refresh();
+        } else {
+            QMessageBox::critical(this, tr("Error"), msg->data("error").toString());
+        }
+    } else if(msg->isTypeCommand(MSG_TYPE::PURCHASE_RETURN, MSG_COMMAND::SUMMARY) && msg->isSuccess()) {
+        mTotalCredit->setValue(Preference::toString(msg->data("total").toDouble()));
+    }
+}
 
+void PurchaseReturnWidget::showEvent(QShowEvent *e)
+{
+    QWidget::showEvent(e);
+    auto combo = mTableWidget->getTableView()->getHeaderWidget(mTableWidget->getModel()->getIndex("status"))->getComboBox();
+    combo->clear();
+    combo->addItem(tr("All"), -1);
+    combo->addItem(tr("Unreturn"), PURCHASE_RETURN_STATUS::UNRETURN);
+    combo->addItem(tr("Returned"), PURCHASE_RETURN_STATUS::RETURNED);
+    combo = mTableWidget->getTableView()->getHeaderWidget(mTableWidget->getModel()->getIndex("return_type"))->getComboBox();
+    combo->clear();
+    combo->addItem(tr("All"), -1);
+    combo->addItem(tr("Item"), PURCHASE_RETURN_TYPE::ITEM);
+    combo->addItem(tr("Money"), PURCHASE_RETURN_TYPE::MONEY);
 }
 
 void PurchaseReturnWidget::addClicked()
@@ -110,14 +132,37 @@ void PurchaseReturnWidget::addClicked()
     ReturnAddDialog dialog(mMessageBus, this);
     dialog.reset();
     dialog.exec();
+    mTableWidget->getModel()->refresh();
 }
 
 void PurchaseReturnWidget::updateClicked(const QModelIndex &index)
 {
-
+    auto item = static_cast<TableItem*>(index.internalPointer());
+    ReturnAddDialog dialog(mMessageBus, this);
+    dialog.reset();
+    dialog.fill(item->data());
+    dialog.exec();
+    mTableWidget->getModel()->refresh();
 }
 
 void PurchaseReturnWidget::deleteClicked(const QModelIndex &index)
+{
+    auto item = static_cast<TableItem*>(index.internalPointer());
+    int res = QMessageBox::question(this, tr("Confirmation remove"), tr("Are you sure to delete the item?"));
+    if(res == QMessageBox::Yes) {
+        Message msg(MSG_TYPE::PURCHASE_RETURN, MSG_COMMAND::DEL);
+        msg.addData("id", item->id);
+        sendMessage(&msg);
+    }
+}
+
+void PurchaseReturnWidget::getSummary()
+{
+    Message msg(MSG_TYPE::PURCHASE_RETURN, MSG_COMMAND::SUMMARY);
+    sendMessage(&msg);
+}
+
+void PurchaseReturnWidget::resolutionClicked()
 {
 
 }

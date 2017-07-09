@@ -3,6 +3,7 @@
 using namespace LibGUI;
 
 void PurchaseItem::fill(const QVariantMap &data) {
+    id = data["id"].toInt();
     barcode = data["barcode"].toString();
     name = data["name"].toString();
     count = data["count"].toFloat();

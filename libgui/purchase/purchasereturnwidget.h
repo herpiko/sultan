@@ -40,6 +40,7 @@ public:
 
 protected:
     void messageReceived(LibG::Message *msg) override;
+    void showEvent(QShowEvent *e);
 
 private:
     Ui::NormalWidget *ui;
@@ -50,6 +51,8 @@ private slots:
     void addClicked();
     void updateClicked(const QModelIndex &index);
     void deleteClicked(const QModelIndex &index);
+    void getSummary();
+    void resolutionClicked();
 };
 
 }

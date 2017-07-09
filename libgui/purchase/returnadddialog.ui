@@ -169,6 +169,13 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="pushSaveAgain">
+       <property name="text">
+        <string>Save and Again</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>
@@ -178,6 +185,7 @@
   <tabstop>linePurchaseItem</tabstop>
   <tabstop>doubleCount</tabstop>
   <tabstop>plainNote</tabstop>
+  <tabstop>pushSaveAgain</tabstop>
   <tabstop>pushSave</tabstop>
   <tabstop>pushCancel</tabstop>
  </tabstops>

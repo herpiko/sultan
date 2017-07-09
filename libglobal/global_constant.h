@@ -161,6 +161,16 @@ namespace MONEY_LINK_TYPE {
     const int CUSTOMER_CREDIT   = 3;
 }
 
+namespace PURCHASE_RETURN_TYPE {
+    const int ITEM      = 0;
+    const int MONEY     = 1;
+}
+
+namespace PURCHASE_RETURN_STATUS {
+    const int UNRETURN      = 0;
+    const int RETURNED      = 1;
+}
+
 }
 
 #endif // GLOBAL_CONSTANT_H

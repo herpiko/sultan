@@ -87,7 +87,8 @@ void MainWindow::setup()
     ui->action_Category->setEnabled(UserSession::hasPermission(PERMISSION::CATEGORY));
     ui->action_Suplier->setEnabled(UserSession::hasPermission(PERMISSION::SUPLIER));
     ui->action_Cashier->setEnabled(UserSession::hasPermission(PERMISSION::CASHIER));
-    ui->menu_Purchase->setEnabled(UserSession::hasPermission(PERMISSION::PURCASHE));
+    ui->actionPurchase->setEnabled(UserSession::hasPermission(PERMISSION::PURCASHE));
+    ui->actionPurchaseReturn->setEnabled(UserSession::hasPermission(PERMISSION::PURCASHE));
     ui->action_Items->setEnabled(UserSession::hasPermission(PERMISSION::ITEM_RW));
     ui->actionItems->setEnabled(UserSession::hasPermission(PERMISSION::REPORT));
     ui->actionSales->setEnabled(UserSession::hasPermission(PERMISSION::REPORT));
@@ -139,7 +140,7 @@ void MainWindow::setupConnection()
     connect(ui->action_Transaction, SIGNAL(triggered(bool)), SLOT(openTransaction()));
     connect(ui->action_MOney, SIGNAL(triggered(bool)), SLOT(openMoney()));
     connect(ui->actionCheck_Update, SIGNAL(triggered(bool)), SLOT(openAutoUpdate()));
-    connect(ui->actionReturn, SIGNAL(triggered(bool)), SLOT(openPurchaseReturn()));
+    connect(ui->actionPurchaseReturn, SIGNAL(triggered(bool)), SLOT(openPurchaseReturn()));
 }
 
 void MainWindow::showWindowFullScreen()

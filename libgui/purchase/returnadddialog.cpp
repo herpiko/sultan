@@ -25,6 +25,9 @@
 #include "guiutil.h"
 #include "purchaseitemselectiondialog.h"
 #include "preference.h"
+#include "flashmessagemanager.h"
+#include "usersession.h"
+#include <QMessageBox>
 #include <QDebug>
 
 using namespace LibGUI;
@@ -40,6 +43,9 @@ ReturnAddDialog::ReturnAddDialog(LibG::MessageBus *bus, QWidget *parent) :
     event->setFocusEvent(true);
     ui->linePurchaseItem->installEventFilter(event);
     connect(event, SIGNAL(focused(QObject*)), SLOT(purchaseItemFocused()));
+    connect(ui->doubleCount, SIGNAL(valueChanged(double)), SLOT(calculateTotal()));
+    connect(ui->pushSave, SIGNAL(clicked(bool)), SLOT(saveClicked()));
+    connect(ui->pushSaveAgain, SIGNAL(clicked(bool)), SLOT(saveClicked()));
 
     Message msg(MSG_TYPE::SUPLIER, MSG_COMMAND::QUERY);
     msg.setLimit(-1);
@@ -53,11 +59,32 @@ ReturnAddDialog::~ReturnAddDialog()
 
 void ReturnAddDialog::reset()
 {
+    if(!mIsAddAgain) ui->comboSuplier->setCurrentIndex(0);
+    ui->comboSuplier->setFocus(Qt::TabFocusReason);
+    ui->doubleCount->setValue(0);
+    ui->plainNote->clear();
+    ui->pushSave->setEnabled(true);
+    ui->pushSaveAgain->setEnabled(true);
+    ui->linePurchaseItem->clear();
+    ui->labelName->clear();
+    ui->labelPrice->clear();
+    ui->labelTotal->clear();
+    mId = 0;
 }
 
 void ReturnAddDialog::fill(const QVariantMap &data)
 {
-
+    mId = data["id"].toInt();
+    mItem.id = data["purchase_item_id"].toInt();
+    mItem.barcode = data["barcode"].toString();
+    mItem.name = data["name"].toString();
+    mItem.price = data["price"].toDouble();
+    mItem.discount = 0;
+    mCurrentSuplier = data["suplier_id"].toInt();
+    ui->doubleCount->setValue(data["count"].toFloat());
+    ui->plainNote->setPlainText(data["note"].toString());
+    ui->linePurchaseItem->setEnabled(false);
+    fillField();
 }
 
 void ReturnAddDialog::messageReceived(LibG::Message *msg)
@@ -65,6 +92,21 @@ void ReturnAddDialog::messageReceived(LibG::Message *msg)
     if(msg->isType(MSG_TYPE::SUPLIER)) {
         const QVariantList &list = msg->data("data").toList();
         populateSuplier(list);
+    } else if(msg->isType(MSG_TYPE::PURCHASE_RETURN)) {
+        if(msg->isSuccess()) {
+            if(msg->isCommand(MSG_COMMAND::INSERT)) {
+                FlashMessageManager::showMessage(tr("Return added successfully"));
+            } else if(msg->isCommand(MSG_COMMAND::UPDATE)) {
+                FlashMessageManager::showMessage(tr("Return updated successfully"));
+            }
+            ui->linePurchaseItem->setEnabled(true);
+            if(mIsAddAgain) reset();
+            else close();
+        } else {
+            QMessageBox::critical(this, tr("Error"), msg->data("error").toString());
+            ui->pushSave->setEnabled(true);
+            ui->pushSaveAgain->setEnabled(true);
+        }
     }
 }
 
@@ -79,21 +121,56 @@ void ReturnAddDialog::populateSuplier(const QVariantList &list)
     GuiUtil::selectCombo(ui->comboSuplier, mCurrentSuplier);
 }
 
+void ReturnAddDialog::fillField()
+{
+    ui->linePurchaseItem->setText(mItem.barcode);
+    ui->labelName->setText(mItem.name);
+    ui->labelPrice->setText(Preference::toString(mItem.price - mItem.discount));
+    ui->doubleCount->setFocus(Qt::TabFocusReason);
+    ui->doubleCount->selectAll();
+    calculateTotal();
+}
+
 void ReturnAddDialog::purchaseItemFocused()
 {
-    PurchaseItemSelectionDialog dialog(mMessageBus, ui->comboSuplier->currentData().toInt(), &mItem, this);
+    int suplier = ui->comboSuplier->currentData().toInt();
+    if(suplier <= 0) return;
+    PurchaseItemSelectionDialog dialog(mMessageBus, suplier, &mItem, this);
     dialog.exec();
     if(mItem.barcode.isEmpty()) {
         close();
     } else {
-        ui->linePurchaseItem->setText(mItem.barcode);
-        ui->labelName->setText(mItem.name);
-        ui->labelPrice->setText(Preference::toString(mItem.price));
-        ui->doubleCount->setFocus(Qt::TabFocusReason);
+        fillField();
     }
 }
 
 void ReturnAddDialog::saveClicked()
 {
+    if(GuiUtil::anyEmpty(QList<QWidget*>() << ui->linePurchaseItem << ui->doubleCount)) {
+        QMessageBox::critical(this, tr("Error"), tr("Please fill correctly"));
+        return;
+    }
+    auto button = static_cast<QPushButton*>(QObject::sender());
+    mIsAddAgain = button == ui->pushSaveAgain;
+    Message msg(MSG_TYPE::PURCHASE_RETURN, MSG_COMMAND::INSERT);
+    QVariantMap data{{"barcode", mItem.barcode}, {"count", ui->doubleCount->value()}, {"price", (mItem.price - mItem.discount)},
+                    {"suplier_id", ui->comboSuplier->currentData()}, {"purchase_item_id", mItem.id},
+                    {"total", (mItem.price - mItem.discount) * ui->doubleCount->value()}, {"note", ui->plainNote->toPlainText()},
+                    {"name", mItem.name}};
+    if(mId <= 0) {
+        msg.setData(data);
+        msg.addData("user_id", UserSession::id());
+    } else {
+        msg.setCommand(MSG_COMMAND::UPDATE);
+        msg.addData("id", mId);
+        msg.addData("data", data);
+    }
+    sendMessage(&msg);
+    ui->pushSave->setEnabled(false);
+    ui->pushSaveAgain->setEnabled(false);
+}
 
+void ReturnAddDialog::calculateTotal()
+{
+    ui->labelTotal->setText(Preference::toString((mItem.price - mItem.discount) * ui->doubleCount->value()));
 }

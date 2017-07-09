@@ -26,6 +26,7 @@
 #include "global_constant.h"
 #include "headerwidget.h"
 #include "db_constant.h"
+#include "dbutil.h"
 
 using namespace LibGUI;
 using namespace LibG;
@@ -38,11 +39,13 @@ PurchaseItemSelectionDialog::PurchaseItemSelectionDialog(LibG::MessageBus *bus, 
     ui->setupUi(this);
     auto model = ui->tableWidget->getModel();
     model->setMessageBus(bus);
+    model->addColumn("created_at", tr("Date"), Qt::AlignLeft, [](TableItem *item, const QString &key) {
+        return LibDB::DBUtil::sqlDateToDateTime(item->data(key).toString()).toString("dd-MM-yyyy");
+    });
     model->addColumn("barcode", tr("Barcode"));
     model->addColumn("name", tr("Name"));
     model->addColumn("count", tr("Count"), Qt::AlignRight);
     model->addColumnMoney("price", tr("Price"));
-    model->addColumnMoney("total", tr("Sub-total"));
     model->addColumnMoney("discount", tr("Discount"));
     model->addColumnMoney("final", tr("Total"));
     model->addHeaderFilter("barcode", HeaderFilter{HeaderWidget::LineEdit, TableModel::FilterLike, QVariant()});
@@ -50,9 +53,10 @@ PurchaseItemSelectionDialog::PurchaseItemSelectionDialog(LibG::MessageBus *bus, 
     model->setTypeCommand(MSG_TYPE::PURCHASE_ITEM, MSG_COMMAND::QUERY);
     model->setTypeCommandOne(MSG_TYPE::PURCHASE_ITEM, MSG_COMMAND::GET);
     model->setFilter("suplier_id", COMPARE::EQUAL, suplier);
+    model->setSort("created_at DESC");
     ui->tableWidget->setupTable();
     ui->tableWidget->getTableView()->horizontalHeader()->setStretchLastSection(true);
-    GuiUtil::setColumnWidth(ui->tableWidget->getTableView(), QList<int>() << 150 << 200 << 100 << 100 << 100 << 100 << 100);
+    GuiUtil::setColumnWidth(ui->tableWidget->getTableView(), QList<int>() << 100 << 150 << 200 << 100 << 100 << 100 << 100);
     model->refresh();
     connect(ui->tableWidget->getTableView(), SIGNAL(doubleClicked(QModelIndex)), SLOT(tableDoubleClicked(QModelIndex)));
 }

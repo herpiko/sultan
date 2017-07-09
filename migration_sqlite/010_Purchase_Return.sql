@@ -4,6 +4,7 @@ CREATE TABLE purchaseitemreturns (
     `updated_at` DATETIME DEFAULT (datetime('now', 'localtime')),
     `deleted_at` DATETIME NULL,
     `barcode` VARCHAR(128) NOT NULL DEFAULT '',
+    `name` VARCHAR(128) NOT NULL DEFAULT '',
     `count` FLOAT NOT NULL DEFAULT '0',
     `price` DECIMAL(15, 2) NOT NULL DEFAULT 0,
     `suplier_id` INT NOT NULL,
@@ -14,7 +15,8 @@ CREATE TABLE purchaseitemreturns (
     `total` DECIMAL(15, 2) NOT NULL DEFAULT 0,
     `bank_id` INT NOT NULL DEFAULT 0,
     `return_payment` DECIMAL(15, 2) NOT NULL DEFAULT 0,
-    `note` VARCHAR(255) NOT NULL DEFAULT ''
+    `note` VARCHAR(255) NOT NULL DEFAULT '',
+    `user_id` INT NOT NULL
 );
 -- separator
-CREATE INDEX PURCHASEITEMRETURN ON sellprices (barcode);
+CREATE INDEX PURCHASEITEMRETURN ON purchaseitemreturns (barcode);

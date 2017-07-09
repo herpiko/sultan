@@ -92,15 +92,10 @@
     <property name="title">
      <string>&amp;Transaction</string>
     </property>
-    <widget class="QMenu" name="menu_Purchase">
-     <property name="title">
-      <string>&amp;Purchase</string>
-     </property>
-     <addaction name="actionPurchase"/>
-     <addaction name="actionReturn"/>
-    </widget>
     <addaction name="action_Cashier"/>
-    <addaction name="menu_Purchase"/>
+    <addaction name="separator"/>
+    <addaction name="actionPurchase"/>
+    <addaction name="actionPurchaseReturn"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -239,9 +234,9 @@
     <string>Purchase</string>
    </property>
   </action>
-  <action name="actionReturn">
+  <action name="actionPurchaseReturn">
    <property name="text">
-    <string>Return</string>
+    <string>Purchase &amp;Return</string>
    </property>
   </action>
  </widget>
