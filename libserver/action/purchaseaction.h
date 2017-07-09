@@ -33,7 +33,7 @@ public:
 
 protected:
     void afterInsert(const QVariantMap &data) override;
-    void afterUpdate(const QVariantMap &data) override;
+    void afterUpdate(const QVariantMap &oldData, const QVariantMap &data) override;
     void selectAndJoin() override;
     QMap<QString, QString> fieldMap() const override;
     void insertTransaction(const QVariantMap &data);
