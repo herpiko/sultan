@@ -80,6 +80,7 @@ namespace MSG_TYPE {
     const int REWARD_POIN       = 15;
     const int BANK              = 16;
     const int TRANSACTION       = 17;
+    const int PURCHASE_RETURN   = 18;
 }
 
 namespace MSG_COMMAND {

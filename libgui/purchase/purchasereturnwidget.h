@@ -1,8 +1,8 @@
 /*
- * keyevent.h
+ * purchasereturnwidget.h
  * Copyright 2017 - ~, Apin <apin.klas@gmail.com>
  *
- * This file is part of Sultan.
+ * This file is part of Turbin.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -17,37 +17,41 @@
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef KEYEVENT_H
-#define KEYEVENT_H
+#ifndef PURCHASERETURNWIDGET_H
+#define PURCHASERETURNWIDGET_H
 
-#include "gui_global.h"
-#include <QObject>
+#include "messagehandler.h"
+#include <QWidget>
 
-class QKeyEvent;
+namespace Ui {
+class NormalWidget;
+}
 
 namespace LibGUI {
 
-class GUISHARED_EXPORT KeyEvent : public QObject
+class TableWidget;
+class TileWidget;
+
+class PurchaseReturnWidget : public QWidget, public LibG::MessageHandler
 {
     Q_OBJECT
 public:
-    KeyEvent(QObject *parent = 0);
-    void discardKey(Qt::Key key);
-    void addConsumeKey(Qt::Key key);
-    inline void setFocusEvent(bool value) { mFocusEvent = value; }
+    PurchaseReturnWidget(LibG::MessageBus *bus, QWidget *parent = 0);
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *event);
+    void messageReceived(LibG::Message *msg) override;
 
 private:
-    bool mFocusEvent = false;
-    QList<Qt::Key> mDiscardKey;
-    QList<Qt::Key> mConsumeKey;
+    Ui::NormalWidget *ui;
+    TableWidget *mTableWidget;
+    TileWidget *mTotalCredit;
 
-signals:
-    void keyPressed(QObject *sender, QKeyEvent *keyEvent);
-    void focused(QObject *sender);
+private slots:
+    void addClicked();
+    void updateClicked(const QModelIndex &index);
+    void deleteClicked(const QModelIndex &index);
 };
 
 }
-#endif // KEYEVENT_H
+
+#endif // PURCHASERETURNWIDGET_H

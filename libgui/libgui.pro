@@ -107,7 +107,10 @@ SOURCES += \
     cashier/solditemlistdialog.cpp \
     cashier/returnitemadddialog.cpp \
     about/autoupdatedialog.cpp \
-    transaction/addtransactiondialog.cpp
+    transaction/addtransactiondialog.cpp \
+    purchase/purchasereturnwidget.cpp \
+    purchase/returnadddialog.cpp \
+    purchase/purchaseitemselectiondialog.cpp
 
 HEADERS += \ 
     gui_global.h \
@@ -177,7 +180,10 @@ HEADERS += \
     cashier/solditemlistdialog.h \
     cashier/returnitemadddialog.h \
     about/autoupdatedialog.h \
-    transaction/addtransactiondialog.h
+    transaction/addtransactiondialog.h \
+    purchase/purchasereturnwidget.h \
+    purchase/returnadddialog.h \
+    purchase/purchaseitemselectiondialog.h
 
 FORMS += \
     mainwindow.ui \
@@ -218,4 +224,6 @@ FORMS += \
     cashier/solditemlistdialog.ui \
     cashier/returnitemadddialog.ui \
     about/autoupdatedialog.ui \
-    transaction/addtransactiondialog.ui
+    transaction/addtransactiondialog.ui \
+    purchase/returnadddialog.ui \
+    purchase/purchaseitemselectiondialog.ui

@@ -1,8 +1,8 @@
 /*
- * keyevent.h
+ * returnadddialog.h
  * Copyright 2017 - ~, Apin <apin.klas@gmail.com>
  *
- * This file is part of Sultan.
+ * This file is part of Turbin.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -17,37 +17,42 @@
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef KEYEVENT_H
-#define KEYEVENT_H
+#ifndef RETURNADDDIALOG_H
+#define RETURNADDDIALOG_H
 
-#include "gui_global.h"
-#include <QObject>
+#include "messagehandler.h"
+#include <QDialog>
 
-class QKeyEvent;
+namespace Ui {
+class ReturnAddDialog;
+}
 
 namespace LibGUI {
 
-class GUISHARED_EXPORT KeyEvent : public QObject
+class ReturnAddDialog : public QDialog, public LibG::MessageHandler
 {
     Q_OBJECT
+
 public:
-    KeyEvent(QObject *parent = 0);
-    void discardKey(Qt::Key key);
-    void addConsumeKey(Qt::Key key);
-    inline void setFocusEvent(bool value) { mFocusEvent = value; }
+    ReturnAddDialog(LibG::MessageBus *bus, QWidget *parent = 0);
+    ~ReturnAddDialog();
+    void reset();
+    void fill(const QVariantMap &data);
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *event);
+    void messageReceived(LibG::Message *msg) override;
 
 private:
-    bool mFocusEvent = false;
-    QList<Qt::Key> mDiscardKey;
-    QList<Qt::Key> mConsumeKey;
+    Ui::ReturnAddDialog *ui;
+    int mId = -1;
+    int mCurrentSuplier = -1;
 
-signals:
-    void keyPressed(QObject *sender, QKeyEvent *keyEvent);
-    void focused(QObject *sender);
+    void populateSuplier(const QVariantList &list);
+
+private slots:
+    void purchaseItemFocused();
+    void saveClicked();
 };
 
 }
-#endif // KEYEVENT_H
+#endif // RETURNADDDIALOG_H
