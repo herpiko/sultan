@@ -21,31 +21,22 @@
 #define PURCHASEITEMSELECTIONDIALOG_H
 
 #include "messagebus.h"
+#include "purchaseitem.h"
 #include <QDialog>
 
 namespace Ui {
 class PurchaseItemSelectionDialog;
 }
 
-struct PurchaseItem {
-    QString barcode;
-    QString name;
-    float count;
-    double price;
-    double discount;
-    double total;
-    double final;
-    void fill(const QVariantMap &data);
-};
+namespace LibGUI {
 
 class PurchaseItemSelectionDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    PurchaseItemSelectionDialog(LibG::MessageBus *bus, int suplier, QWidget *parent = 0);
+    PurchaseItemSelectionDialog(LibG::MessageBus *bus, int suplier, PurchaseItem *item, QWidget *parent = 0);
     ~PurchaseItemSelectionDialog();
-    inline PurchaseItem getSelectedItem() { return mItem; }
 
 private:
     Ui::PurchaseItemSelectionDialog *ui;
@@ -55,4 +46,5 @@ private slots:
     void tableDoubleClicked(const QModelIndex &index);
 };
 
+}
 #endif // PURCHASEITEMSELECTIONDIALOG_H

@@ -21,6 +21,7 @@
 #define RETURNADDDIALOG_H
 
 #include "messagehandler.h"
+#include "purchaseitem.h"
 #include <QDialog>
 
 namespace Ui {
@@ -46,6 +47,7 @@ private:
     Ui::ReturnAddDialog *ui;
     int mId = -1;
     int mCurrentSuplier = -1;
+    PurchaseItem mItem;
 
     void populateSuplier(const QVariantList &list);
 

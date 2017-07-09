@@ -110,7 +110,8 @@ SOURCES += \
     transaction/addtransactiondialog.cpp \
     purchase/purchasereturnwidget.cpp \
     purchase/returnadddialog.cpp \
-    purchase/purchaseitemselectiondialog.cpp
+    purchase/purchaseitemselectiondialog.cpp \
+    purchase/purchaseitem.cpp
 
 HEADERS += \ 
     gui_global.h \
@@ -183,7 +184,8 @@ HEADERS += \
     transaction/addtransactiondialog.h \
     purchase/purchasereturnwidget.h \
     purchase/returnadddialog.h \
-    purchase/purchaseitemselectiondialog.h
+    purchase/purchaseitemselectiondialog.h \
+    purchase/purchaseitem.h
 
 FORMS += \
     mainwindow.ui \

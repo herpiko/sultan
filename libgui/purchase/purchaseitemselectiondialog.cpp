@@ -30,9 +30,10 @@
 using namespace LibGUI;
 using namespace LibG;
 
-PurchaseItemSelectionDialog::PurchaseItemSelectionDialog(LibG::MessageBus *bus, int suplier, QWidget *parent) :
+PurchaseItemSelectionDialog::PurchaseItemSelectionDialog(LibG::MessageBus *bus, int suplier, PurchaseItem *item, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::PurchaseItemSelectionDialog)
+    ui(new Ui::PurchaseItemSelectionDialog),
+    mItem(item)
 {
     ui->setupUi(this);
     auto model = ui->tableWidget->getModel();
@@ -64,17 +65,6 @@ PurchaseItemSelectionDialog::~PurchaseItemSelectionDialog()
 void PurchaseItemSelectionDialog::tableDoubleClicked(const QModelIndex &index)
 {
     auto item = static_cast<TableItem*>(index.internalPointer());
-    mItem.fill(item->data());
+    mItem->fill(item->data());
     close();
-}
-
-void PurchaseItem::fill(const QVariantMap &data)
-{
-    barcode = data["barcode"].toString();
-    name = data["name"].toString();
-    count = data["count"].toFloat();
-    price = data["price"].toDouble();
-    discount = data["discount"].toDouble();
-    total = data["total"].toDouble();
-    final = data["final"].toDouble();
 }

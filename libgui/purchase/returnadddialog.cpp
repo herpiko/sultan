@@ -24,6 +24,7 @@
 #include "global_constant.h"
 #include "guiutil.h"
 #include "purchaseitemselectiondialog.h"
+#include "preference.h"
 #include <QDebug>
 
 using namespace LibGUI;
@@ -80,9 +81,16 @@ void ReturnAddDialog::populateSuplier(const QVariantList &list)
 
 void ReturnAddDialog::purchaseItemFocused()
 {
-    PurchaseItemSelectionDialog dialog(mMessageBus, ui->comboSuplier->currentData().toInt(), this);
+    PurchaseItemSelectionDialog dialog(mMessageBus, ui->comboSuplier->currentData().toInt(), &mItem, this);
     dialog.exec();
-    ui->doubleCount->setFocus(Qt::TabFocusReason);
+    if(mItem.barcode.isEmpty()) {
+        close();
+    } else {
+        ui->linePurchaseItem->setText(mItem.barcode);
+        ui->labelName->setText(mItem.name);
+        ui->labelPrice->setText(Preference::toString(mItem.price));
+        ui->doubleCount->setFocus(Qt::TabFocusReason);
+    }
 }
 
 void ReturnAddDialog::saveClicked()
